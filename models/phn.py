@@ -10,7 +10,7 @@ from com.utils import padding
 
 
 class PHN(nn.Module):  # param: 16821760
-    def __init__(self, options,embedding=None ):
+    def __init__(self, options, embedding=None):
         super(PHN, self).__init__()
         self.opts = options
         # #print("loading fiedler")
@@ -20,10 +20,10 @@ class PHN(nn.Module):  # param: 16821760
         self.drop_out = options["dropout"]
         if embedding is None:
             embedding_size = options["emb_size"]
-            self.embedding = nn.Embedding(vocab_size+1,embedding_dim=embedding_size)
+            self.embedding = nn.Embedding(vocab_size + 1, embedding_dim=embedding_size)
             initrange = 0.1
             nn.init.uniform_(self.embedding.weight, -initrange, initrange)  # embedding初始化为-0.1~0.1之间
-            print("embedding initialized")
+            # #print("embedding initialized")
         else:
             embedding_size = np.shape(embedding)[1]  # (vocab_size,embedding_dim)
             self.embedding = nn.Embedding(vocab_size + 1, embedding_dim=embedding_size)
@@ -35,7 +35,7 @@ class PHN(nn.Module):  # param: 16821760
                                 bidirectional=True)
         self.a_encoder = nn.GRU(input_size=embedding_size, hidden_size=encoder_size, batch_first=True,
                                 bidirectional=True)
-        self.a_attention = nn.Linear(2*encoder_size, 1, bias=False)
+        self.a_attention = nn.Linear(2 * encoder_size, 1, bias=False)
 
         # 4.1 Semantic Perspectiv
         self.V_t = nn.Linear(2 * encoder_size, 1, bias=False)
@@ -75,8 +75,7 @@ class PHN(nn.Module):  # param: 16821760
 
         # 4.4 Combining Perspectives
         # self.W_mlp = nn.Linear(12, 3)
-        self.W_mlp = nn.Linear(12, 2*encoder_size)
-
+        self.W_mlp = nn.Linear(12, 2 * encoder_size)
 
         # prediction layer
         self.MLP = nn.Linear(12, 2 * encoder_size, bias=False)
@@ -104,9 +103,9 @@ class PHN(nn.Module):  # param: 16821760
         t = F.dropout(t, self.drop_out)  # (b,p,2h)
 
         a_score = F.softmax(self.a_attention(a), 1)  # (3b,a,1)
-        # print(a_score.shape)
+        # # #print(a_score.shape)
         a_output = a_score.transpose(2, 1).bmm(a).squeeze()  # (3b,1,a) bmm (3b,a,2h)-> (3b,2h)
-        # print(a_output.shape)
+        # # #print(a_output.shape)
         a_emb = a_output.view(opts["batch"], 3, a.size(2))  # (b,3,2h)
 
         # 4.1 Semantic Perspective
@@ -140,7 +139,7 @@ class PHN(nn.Module):  # param: 16821760
         # #print("st: {}".format(np.shape(st)))  # (3,b,h)
         # #print("sh: {}".format(np.shape(sh)))  # (3,b,h)
         M_sem = F.cosine_similarity(st, sh, dim=2)
-        M_sem=F.dropout(M_sem,self.drop_out)
+        M_sem = F.dropout(M_sem, self.drop_out)
 
         # #print("--Semantic-- M_sem: {}".format(np.shape(M_sem)))  # (3,b)
 
@@ -151,7 +150,7 @@ class PHN(nn.Module):  # param: 16821760
             :param pos_weight: (t,)
             :return:
             """
-            position_T = pos_weight[:t.size(2)]
+            position_T = pos_weight
             position_T = position_T.unsqueeze(0).unsqueeze(1).unsqueeze(3).repeat(opts["batch"], 3, 1, 1)
             position_Q = position_T.repeat(1, 1, 1, q.size(2))
             position_A = position_T.repeat(1, 1, 1, a.size(2))
@@ -186,13 +185,13 @@ class PHN(nn.Module):  # param: 16821760
             _MA = torch.max(A_kn, dim=2)[0]  # (b,3,1,a)
             _MA = _MA.view(a.size(0), 3, -1)  # (b,3,a)
             MA = _MA.view(-1, a.size(2)).unsqueeze(1).bmm(w_n_a.view(-1, a.size(2), 1))  # (3b,1,a)(3b,a,1) -> (3b,1,1)
-            MA = MA.view(a.size(0), 3) # (b,3) 3个维度上的MA不相等
+            MA = MA.view(a.size(0), 3)  # (b,3) 3个维度上的MA不相等
             MA = F.softmax(MA, dim=1)
 
-            MQ=F.dropout(MQ,self.drop_out)
-            MA=F.dropout(MA,self.drop_out)
+            MQ = F.dropout(MQ, self.drop_out)
+            MA = F.dropout(MA, self.drop_out)
 
-            return MQ,MA,MQ*MA
+            return MQ, MA, MQ * MA
 
         #  4.2-(1)preparing
         tk = F.leaky_relu(self.W_B_t(t))  # （b,3,t,h)
@@ -212,16 +211,16 @@ class PHN(nn.Module):  # param: 16821760
         # #print("w_n/m_a/q: {}".format(w_m_q.shape))
 
         # 4.2.1 Sentential
-        cq_km, ca_kn = get_pos_simil(text_k=tk, query_m=qm, answer_n=an, pos_weight=None)
+        cq_km, ca_kn = get_pos_simil(text_k=tk, query_m=qm, answer_n=an, pos_weight=None)  # fixme: slow
         # #print("ca_kn: {}".format(np.shape(ca_kn)))
         # #print("cq_km: {}".format(np.shape(cq_km)))
 
-        Mq,Ma,Maq=get_M(cq_km,ca_kn)
+        Mq, Ma, Maq = get_M(cq_km, ca_kn)
         M_word = self.W_a1(Ma) + self.W_a2(Mq) + self.W_a3(Maq)
         # #print("--WbW/Sentential-- M_word: {}".format(np.shape(M_word)))
 
         # 4.2.2  Sequential Sliding Window
-        sq_km, sa_kn = get_pos_simil(text_k=tk, query_m=qm, answer_n=an, pos_weight=self.position_t)
+        sq_km, sa_kn = get_pos_simil(text_k=tk, query_m=qm, answer_n=an, pos_weight=self.position_t) # fixme: slow
         # #print("sa_kn: {}".format(np.shape(sa_kn)))
         # #print("sq_km: {}".format(np.shape(sq_km)))
 
@@ -249,7 +248,7 @@ class PHN(nn.Module):  # param: 16821760
 
         # 对重新排序的tk作sliding window处理
         tk = tk_sort.unsqueeze(3)
-        sq_km, sa_kn = get_pos_simil(text_k=tk, query_m=qm, answer_n=an, pos_weight=self.position_t2)
+        sq_km, sa_kn = get_pos_simil(text_k=tk, query_m=qm, answer_n=an, pos_weight=self.position_t2)#  fixme: slow
         # #print("sa_kn: {}".format(np.shape(sa_kn)))
         # #print("sq_km: {}".format(np.shape(sq_km)))
 
@@ -257,13 +256,14 @@ class PHN(nn.Module):  # param: 16821760
         M_swd = self.W_a7(Ma) + self.W_a8(Mq) + self.W_a9(Ma * Mq)
         # #print("--WbW/SWD-- M_word: {}".format(np.shape(M_sws)))
 
-        aggregation = torch.cat([M_sem, M_word, M_sws, M_swd], dim=1) # (b,12)
+        aggregation = torch.cat([M_sem, M_word, M_sws, M_swd], dim=1)  # (b,12)
         # #print("aggregation: {}".format(aggregation.shape))
 
         # Layer4: Prediction Layer
-        encoder_output = F.dropout(F.leaky_relu(self.MLP(aggregation)), self.drop_out) # (b,2h)
-        score = F.softmax(a_emb.bmm(encoder_output.unsqueeze(2)).squeeze(), 1) # (b,3,2h) (b,2h,1)
-        print("batch score: {}".format(Counter(score.argmax(1).data.numpy())[0]/opts["batch"]))
+        encoder_output = F.dropout(F.leaky_relu(self.MLP(aggregation)), self.drop_out)  # (b,2h)
+        score = F.softmax(a_emb.bmm(encoder_output.unsqueeze(2)).squeeze(), 1)  # (b,3,2h) (b,2h,1)
+        print("batch score: {}".format(Counter(score.argmax(1).data.numpy())[0] / self.opts["batch"]))
+        # #print("batch score: {}".format(Counter(score.argmax(1).data.numpy())[0] / opts["batch"]))
         if not is_train:
             if is_argmax:
                 return score.argmax(1)
@@ -275,7 +275,7 @@ class PHN(nn.Module):  # param: 16821760
         correct = score[:, 0]
         m_score = torch.max(score, dim=1)[0]
         # #print(m_score.shape)
-        u = 1.5 # score0 与 错误得分的间距
+        u = 1.5  # score0 与 错误得分的间距
         margin = u + correct - m_score
         # #print(margin)
         zeros = torch.FloatTensor(np.zeros(shape=opts["batch"]))

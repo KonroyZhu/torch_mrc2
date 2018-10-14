@@ -34,7 +34,6 @@ class Pred_Layer(nn.Module):
         # MLP
         encoder_output = F.dropout(F.leaky_relu(self.prediction(rp)), self.opts["dropout"])  # (b,1,d)
         score = F.softmax(a_embedding.bmm(encoder_output.transpose(2, 1)).squeeze(), 1)  # (b,3,h) (b,h,1) -> (b,3)
-        print(score)
         print("batch score: {}".format(Counter(score.argmax(1).data.numpy())[0] / self.opts["batch"]))
         if not is_train:
             if is_argmax:

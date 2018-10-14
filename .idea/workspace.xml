@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="2f9ccdbc-8af8-455d-bc1f-7c69bbe66758" name="Default" comment="" />
+    <list default="true" id="2f9ccdbc-8af8-455d-bc1f-7c69bbe66758" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/models/config.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/phn.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/phn.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/pred_layer.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/pred_layer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/qa_net.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/qa_net.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train.py" beforeDir="false" afterPath="$PROJECT_DIR$/train.py" afterDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -14,8 +21,8 @@
       <file leaf-file-name="train.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/train.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="183">
-              <caret line="93" column="39" selection-start-line="93" selection-start-column="39" selection-end-line="93" selection-end-column="39" />
+            <state relative-caret-position="69">
+              <caret line="89" column="36" selection-start-line="89" selection-start-column="36" selection-end-line="89" selection-end-column="36" />
               <folding>
                 <element signature="e#0#15#0" expanded="true" />
               </folding>
@@ -23,11 +30,23 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="qa_net.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="phn.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/models/phn.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="234">
+              <caret line="244" column="24" lean-forward="true" selection-start-line="244" selection-start-column="24" selection-end-line="244" selection-end-column="24" />
+              <folding>
+                <element signature="e#0#13#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="qa_net.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/models/qa_net.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="183">
-              <caret line="344" column="19" selection-start-line="344" selection-start-column="19" selection-end-line="344" selection-end-column="19" />
+            <state relative-caret-position="431">
+              <caret line="301" column="48" selection-start-line="301" selection-start-column="48" selection-end-line="301" selection-end-column="48" />
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
               </folding>
@@ -35,11 +54,20 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="pred_layer.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="config.json" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/models/config.json">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="88">
+              <caret line="4" column="16" selection-start-line="4" selection-start-column="16" selection-end-line="4" selection-end-column="16" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="pred_layer.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/models/pred_layer.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="95">
-              <caret line="36" column="19" selection-start-line="36" selection-start-column="19" selection-end-line="36" selection-end-column="19" />
+            <state relative-caret-position="81">
+              <caret line="36" column="102" lean-forward="true" selection-start-line="36" selection-start-column="8" selection-end-line="36" selection-end-column="102" />
               <folding>
                 <element signature="e#0#31#0" expanded="true" />
               </folding>
@@ -58,8 +86,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>905</find>
-      <find>3737</find>
       <find>234</find>
       <find />
       <find>#print</find>
@@ -83,7 +109,17 @@
       <find>drop_out</find>
       <find>print</find>
       <find>embedding</find>
+      <find />
+      <find />
+      <find>WbW</find>
+      <find>tk_sort:</find>
+      <find>get_position</find>
+      <find />
+      <find>high</find>
     </findStrings>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
@@ -93,8 +129,6 @@
         <option value="$PROJECT_DIR$/preprocess/dep_parse.py" />
         <option value="$PROJECT_DIR$/data/dep/merge.py" />
         <option value="$PROJECT_DIR$/preprocess/idx_test.py" />
-        <option value="$PROJECT_DIR$/models/config.json" />
-        <option value="$PROJECT_DIR$/models/phn.py" />
         <option value="$PROJECT_DIR$/test.py" />
         <option value="$PROJECT_DIR$/models/examp.py" />
         <option value="$PROJECT_DIR$/interface.py" />
@@ -103,9 +137,11 @@
         <option value="$PROJECT_DIR$/models/prediction_layer.py" />
         <option value="$PROJECT_DIR$/models/prediction.py" />
         <option value="$PROJECT_DIR$/models/mwan_full.py" />
+        <option value="$PROJECT_DIR$/models/config.json" />
+        <option value="$PROJECT_DIR$/models/pred_layer.py" />
         <option value="$PROJECT_DIR$/models/qa_net.py" />
         <option value="$PROJECT_DIR$/train.py" />
-        <option value="$PROJECT_DIR$/models/pred_layer.py" />
+        <option value="$PROJECT_DIR$/models/phn.py" />
       </list>
     </option>
   </component>
@@ -115,6 +151,7 @@
     <option name="width" value="1058" />
     <option name="height" value="705" />
   </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
     <navigator proportions="" version="1">
       <foldersAlwaysOnTop value="true" />
@@ -130,24 +167,12 @@
             <path>
               <item name="torch_mrc2" type="b2602c69:ProjectViewProjectNode" />
               <item name="torch_mrc2" type="462c0819:PsiDirectoryNode" />
-              <item name="data" type="462c0819:PsiDirectoryNode" />
+              <item name="models" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="torch_mrc2" type="b2602c69:ProjectViewProjectNode" />
               <item name="torch_mrc2" type="462c0819:PsiDirectoryNode" />
-              <item name="data" type="462c0819:PsiDirectoryNode" />
-              <item name="dep" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="torch_mrc2" type="b2602c69:ProjectViewProjectNode" />
-              <item name="torch_mrc2" type="462c0819:PsiDirectoryNode" />
-              <item name="data" type="462c0819:PsiDirectoryNode" />
-              <item name="emb" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="torch_mrc2" type="b2602c69:ProjectViewProjectNode" />
-              <item name="torch_mrc2" type="462c0819:PsiDirectoryNode" />
-              <item name="preprocess" type="462c0819:PsiDirectoryNode" />
+              <item name="net" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -309,9 +334,9 @@
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.3282572" />
-      <window_info anchor="bottom" id="Version Control" order="7" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info anchor="bottom" id="Python Console" order="7" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.5253968" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.5373609" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Terminal" order="7" />
       <window_info id="Favorites" order="2" side_tool="true" />
@@ -560,16 +585,6 @@
     <entry file="file://$PROJECT_DIR$/models/score_layer.py">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/models/phn.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
-          <caret line="265" column="95" lean-forward="true" selection-start-line="265" selection-start-column="7" selection-end-line="265" selection-end-column="95" />
-          <folding>
-            <element signature="e#0#13#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://C:/Program Files/Anaconda3/envs/torch/Lib/site-packages/torch/nn/modules/module.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="118">
@@ -589,37 +604,47 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/models/config.json">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="154">
-          <caret line="7" column="3" lean-forward="true" selection-start-line="7" selection-start-column="3" selection-end-line="7" selection-end-column="3" />
+        <state relative-caret-position="88">
+          <caret line="4" column="16" selection-start-line="4" selection-start-column="16" selection-end-line="4" selection-end-column="16" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/models/qa_net.py">
+    <entry file="file://$PROJECT_DIR$/models/pred_layer.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="183">
-          <caret line="344" column="19" selection-start-line="344" selection-start-column="19" selection-end-line="344" selection-end-column="19" />
+        <state relative-caret-position="81">
+          <caret line="36" column="102" lean-forward="true" selection-start-line="36" selection-start-column="8" selection-end-line="36" selection-end-column="102" />
           <folding>
-            <element signature="e#0#11#0" expanded="true" />
+            <element signature="e#0#31#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/train.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="183">
-          <caret line="93" column="39" selection-start-line="93" selection-start-column="39" selection-end-line="93" selection-end-column="39" />
+        <state relative-caret-position="69">
+          <caret line="89" column="36" selection-start-line="89" selection-start-column="36" selection-end-line="89" selection-end-column="36" />
           <folding>
             <element signature="e#0#15#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/models/pred_layer.py">
+    <entry file="file://$PROJECT_DIR$/models/phn.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="95">
-          <caret line="36" column="19" selection-start-line="36" selection-start-column="19" selection-end-line="36" selection-end-column="19" />
+        <state relative-caret-position="234">
+          <caret line="244" column="24" lean-forward="true" selection-start-line="244" selection-start-column="24" selection-end-line="244" selection-end-column="24" />
           <folding>
-            <element signature="e#0#31#0" expanded="true" />
+            <element signature="e#0#13#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/models/qa_net.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="431">
+          <caret line="301" column="48" selection-start-line="301" selection-start-column="48" selection-end-line="301" selection-end-column="48" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
           </folding>
         </state>
       </provider>

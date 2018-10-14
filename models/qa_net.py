@@ -246,21 +246,21 @@ class QA_Net(nn.Module):  # param:
         # k=1: o = i-+2*0-(k-1) = i -1 + 1 = i 用kernel=1来做projection保证除hidden_size外输出不变
         self.q_conv_project = nn.Conv1d(in_channels=embedding_size, out_channels=encoder_size, kernel_size=1)
         self.p_conv_project = nn.Conv1d(in_channels=embedding_size, out_channels=encoder_size, kernel_size=1)
-        self.a_conv_project = nn.Conv1d(in_channels=embedding_size, out_channels=encoder_size, kernel_size=1)
+        # self.a_conv_project = nn.Conv1d(in_channels=embedding_size, out_channels=encoder_size, kernel_size=1)
         self.q_highway = Highway(layer_num=2, hidden_size=encoder_size)
         self.p_highway = Highway(layer_num=2, hidden_size=encoder_size)
-        self.a_highway = Highway(layer_num=2, hidden_size=encoder_size)
+        self.a_highway = Highway(layer_num=2, hidden_size=embedding_size)
 
         self.q_conv_dws = DepthwiseSeparableConv(in_ch=encoder_size, out_ch=encoder_size, k=5)
-        self.a_conv_dws = DepthwiseSeparableConv(in_ch=encoder_size, out_ch=encoder_size, k=5)
+        self.a_conv_dws = DepthwiseSeparableConv(in_ch=embedding_size, out_ch=embedding_size, k=5)
         self.p_conv_dws = DepthwiseSeparableConv(in_ch=encoder_size, out_ch=encoder_size, k=5)
 
         self.p_encoder = Encoder_Block(conv_num=4, in_ch=encoder_size, k=7, length=self.opts["p_len"])
         self.q_encoder = Encoder_Block(conv_num=4, in_ch=encoder_size, k=7, length=self.opts["q_len"])
-        self.a_encoder = Encoder_Block(conv_num=4, in_ch=encoder_size, k=7, length=self.opts["alt_len"])
+        self.a_encoder = Encoder_Block(conv_num=4, in_ch=embedding_size, k=7, length=self.opts["alt_len"])
 
         # answer transform
-        self.a_attention = nn.Linear(encoder_size, 1, bias=False)
+        self.a_attention = nn.Linear(embedding_size, 1, bias=False)
 
         # Context-Query Attention
         self.cq_att = CQAttention(encoder_size)
@@ -272,7 +272,6 @@ class QA_Net(nn.Module):  # param:
         # RESIZE
         self.q_encoder_resize = DepthwiseSeparableConv(in_ch=encoder_size, out_ch=2 * encoder_size, k=5)
         self.M2_resize = DepthwiseSeparableConv(in_ch=encoder_size, out_ch=2 *encoder_size, k=5)
-        self.a_resize = DepthwiseSeparableConv(in_ch=encoder_size, out_ch=embedding_size, k=5)
         self.predictio_layer= Pred_Layer(options)
 
         # self.initiation()
@@ -293,16 +292,14 @@ class QA_Net(nn.Module):  # param:
 
         q_conv_projection = self.q_conv_project(q_embedding.transpose(1, 2)).transpose(1, 2)  # (b,q,emb)-> (b,q,h)
         p_conv_projection = self.p_conv_project(p_embedding.transpose(1, 2)).transpose(1, 2)  # (b,q,emb)-> (b,p,h)
-        a_conv_projection = self.a_conv_project(a_embeddings.transpose(1, 2)).transpose(1, 2)  # (b,q,emb)-> (3b,a,h)
+        # a_conv_projection = self.a_conv_project(a_embeddings.transpose(1, 2)).transpose(1, 2)  # (b,q,emb)-> (3b,a,h)
         # #print("p/q_conv_projection: {}".format(p_conv_projection.shape))
         # #print("a_conv_projection: {}".format(a_conv_projection.shape))
 
         # # two-layer highway network
         q_highway = self.q_highway(q_conv_projection)
         p_highway = self.p_highway(p_conv_projection)
-        a_highway = self.a_highway(a_conv_projection)
-        # #print("p/q_high: {}".format(p_highway.shape))
-        # #print("a_high: {}".format(a_highway.shape))
+        a_highway = self.a_highway(a_embeddings)
 
         q_conv_dws = self.q_conv_dws(q_highway.transpose(1, 2)).transpose(1, 2)
         p_conv_dws = self.p_conv_dws(p_highway.transpose(1, 2)).transpose(1, 2)
@@ -319,7 +316,7 @@ class QA_Net(nn.Module):  # param:
         # a score
         a_score = F.softmax(self.a_attention(a_encoder), 1)  # (3b,a,1)
         a_output = a_score.transpose(2, 1).bmm(a_encoder).squeeze()  # (3b,1,a) bmm (3b,a,h)-> (3b,1,h)
-        a_embedding = a_output.view(opts["batch"], 3, -1)  # (b,3,h)
+        a_embedding = a_output.view(answer.size(0), 3, -1)  # (b,3,h)
 
         X = self.cq_att(p_encoder, q_encoder, p_mask, q_mask)
         # #print("CQ(X): {}".format(X.shape)) # (b.q.4h)
@@ -339,7 +336,6 @@ class QA_Net(nn.Module):  # param:
         # print(q_encoder.shape)
         q_encoder=self.q_encoder_resize(q_encoder.transpose(1,2)).transpose(1,2)
         M2=self.M2_resize(M2).transpose(1,2)
-        a_embedding = self.a_resize(a_embedding.transpose(1,2)).transpose(1,2) # (b,3,h) -> (b,3,emb)
         # Layer4: Prediction Layer
         loss = self.predictio_layer(q_encoder,M2,a_embedding,is_train=is_train,is_argmax=is_argmax)
         return loss

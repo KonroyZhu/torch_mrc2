@@ -82,17 +82,18 @@ def main():
 
 if __name__ == '__main__':
     opts = json.load(open("models/config.json"))
-    embedding_matrix=torch.FloatTensor(get_emb_mat("data/emb/id2v.pkl"))
+    #embedding_matrix=torch.FloatTensor(get_emb_mat("data/emb/id2v.pkl"))
+    embedding_matrix = None
     opts["dep_path"]="data/dep/merged.fiedler.pkl"
-
-    # opts["dropout"]=0.5 # for PHN
-    # model=PHN(opts,embedding_matrix) # 30786761
-
+    # """
+    opts["dropout"]=0.5 # for PHN 13406161
+    model=PHN(opts,embedding_matrix)
+    """
     opts["dropout"] = 0.2  # for QA & MwAN
     opts["head_size"]=1
     model=QA_Net(opts,embedding_matrix)
-    # model = MwAN_full(opts, embedding_matrix)
-
+    model = MwAN_full(opts, embedding_matrix)
+    # """
     print('Model total parameters:', get_model_parameters(model))
     if args.cuda:
         model.cuda()
