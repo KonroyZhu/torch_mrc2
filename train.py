@@ -85,14 +85,16 @@ if __name__ == '__main__':
     #embedding_matrix=torch.FloatTensor(get_emb_mat("data/emb/id2v.pkl"))
     embedding_matrix = None
     opts["dep_path"]="data/dep/merged.fiedler.pkl"
-    # """
-    opts["dropout"]=0.5 # for PHN 13406161
-    model=PHN(opts,embedding_matrix)
+    """ toggle for PHN and others
+    opts["dropout"]=0.5 # for PHN 
+    model=PHN(opts,embedding_matrix) # 13406161
     """
     opts["dropout"] = 0.2  # for QA & MwAN
     opts["head_size"]=1
-    model=QA_Net(opts,embedding_matrix)
-    model = MwAN_full(opts, embedding_matrix)
+    """ toggle for QA/MwAN
+    model=QA_Net(opts,embedding_matrix)  # 14844161
+    """
+    model = MwAN_full(opts, embedding_matrix)  # 16821760
     # """
     print('Model total parameters:', get_model_parameters(model))
     if args.cuda:
