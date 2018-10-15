@@ -7,12 +7,12 @@ import torch
 from com.preprocess import transform_data_to_id
 
 
-def pad_answer(batch,max_len):
+def pad_answer(batch):
     output = []
-    # length_info = [len(x[0]) for x in batch]
-    # max_length = max(length_info)
+    length_info = [len(x[0]) for x in batch]
+    max_length = max(length_info)
     for one in batch:
-        output.append([x + [0] * (max_len - len(x)) for x in one])
+        output.append([x + [0] * (max_length - len(x)) for x in one])
     return output
 
 
@@ -27,13 +27,14 @@ def get_model_parameters(model):
     return total
 
 
-def padding(sequence, pads=0, max_len=None, dtype='int32', return_matrix_for_size=False):
+def padding(sequence, pads=0, max_len=None,limit_max=True, dtype='int32', return_matrix_for_size=False):
     # we should judge the rank
     if True or isinstance(sequence[0], list):
         v_length = [len(x) for x in sequence]  # every sequence length
         seq_max_len = max(v_length)
-        # if (max_len is None) or (max_len > seq_max_len):
-        #     max_len = seq_max_len
+        if limit_max:
+            if (max_len is None) or (max_len > seq_max_len):
+                max_len = seq_max_len
         v_length = list(map(lambda z: z if z <= max_len else max_len, v_length))
         x = (np.ones((len(sequence), max_len)) * pads).astype(dtype)
         for idx, s in enumerate(sequence):

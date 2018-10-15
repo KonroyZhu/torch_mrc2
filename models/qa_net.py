@@ -1,5 +1,6 @@
 import math
 import pickle
+import time
 from collections import Counter
 
 import numpy as np
@@ -69,29 +70,31 @@ class DepthwiseSeparableConv(nn.Module):
 
 
 class PosEncoder(nn.Module):
-    def __init__(self, length: int, encoder_size):
+    def __init__(self, encoder_size):
         super(PosEncoder, self).__init__()
-        freqs = torch.Tensor([
+        self.hidden=encoder_size
+        self.freqs = torch.Tensor([
             10000 ** -(i / encoder_size) if i % 2 == 0 \
                 else 10000 ** -((i - 1) / encoder_size) \
             for i in range(encoder_size)
         ]).unsqueeze(1)  # (h,) -> (h,1)
-        phases = torch.Tensor([
+        self.phases = torch.Tensor([
             0 if i % 2 == 0 \
                 else math.pi / 2 \
             for i in range(encoder_size)
         ]).unsqueeze(1)  # (h,1) cos 与 sin 相差一个pi/2 phases 用于cos与sin的转换
-        pos = torch.arange(length).repeat(encoder_size, 1).to(torch.float)  # (h,x)
-        self.pos_encoding = nn.Parameter(
+
+
+    def forward(self, x,length):
+        # x: (b,h,t)
+        pos = torch.arange(length).repeat(self.hidden, 1).to(torch.float)  # (h,x)
+        pos_encoding = nn.Parameter(
             torch.sin(
                 torch.add(
-                    torch.mul(pos, freqs), phases
+                    torch.mul(pos, self.freqs), self.phases
                 )
             ), requires_grad=False)  # (h,x)* (h,1) + (h,1) 处于1的维度自动广播-> (h,x)
-
-    def forward(self, x):
-        # x: (b,h,t)
-        return x + self.pos_encoding  # (b,h,x)+(h,x) 自动广播->(b.h.x)
+        return x + pos_encoding  # (b,h,x)+(h,x) 自动广播->(b.h.x)
 
 
 def mask_logits(target, mask):
@@ -144,27 +147,42 @@ class SelfAttention(nn.Module):
         out = torch.matmul(head, self.Wo)
         return out.transpose(1, 2)
 
+class Norm_Warpper(nn.Module):
+    def __init__(self,in_ch,length):
+        super(Norm_Warpper, self).__init__()
+        self.norm = nn.LayerNorm([in_ch, length])
+        self.length = length
+    def forward(self, x):
+        # x: (b,h,t)
+        t = x.size(2)
+        pad_length = int(self.length - t)  # 需要补充零的维度数
+        out = F.pad(x, pad=(0, pad_length))  # 在倒数第一个维度补充pad_length列0 (b,h,length)
+        out = self.norm(out)
+        out = out[:,:,:t]
+        return out
+
 
 class Encoder_Block(nn.Module):
     def __init__(self, conv_num: int, in_ch: int, k: int, length: int, num_header=2, dropout=0.1):
         super(Encoder_Block, self).__init__()
         # in_ch 相当于输入的encoder_size
+        self.length =length
         self.dropout = dropout
         self.num_conv = conv_num
-        self.position_encoder = PosEncoder(length=length, encoder_size=in_ch)
-        self.norm_begin = nn.LayerNorm([in_ch, length])
+        self.position_encoder = PosEncoder(encoder_size=in_ch)
+        self.norm_begin = Norm_Warpper(in_ch, length)
         self.convs = nn.ModuleList([DepthwiseSeparableConv(in_ch=in_ch, out_ch=in_ch, k=k)
                                     for _ in range(conv_num)])
-        self.norms = nn.ModuleList([nn.LayerNorm([in_ch, length])
+        self.norms = nn.ModuleList([Norm_Warpper(in_ch, length)
                                     for _ in range(conv_num)])
         self.self_att = SelfAttention(in_ch, num_header)
-        self.norm_end = nn.LayerNorm([in_ch, length])
+        self.norm_end = Norm_Warpper(in_ch, length)
         self.full_connect = nn.Linear(in_ch, in_ch, bias=True)
 
     def forward(self, x, mask):
         # x (b,h,x)
         # mask 用于区分id==0的<PAD>字符
-        out = self.position_encoder(x)
+        out = self.position_encoder(x,x.size(2))
         res = self.norm_begin(out)
         for i, conv in enumerate(self.convs):
             out = conv(out)  # 两层conv后输出形状一致
@@ -279,6 +297,7 @@ class QA_Net(nn.Module):  # param:
     def forward(self, inputs):
         [query, passage, answer, ids, is_train, is_argmax] = inputs
         opts = self.opts
+        time_start = time.time()
         # Embedding & mask
         # TODO: mask 用于区分id是否为0 （id为0的是<PAD>）
         q_mask = (torch.zeros_like(query) != query).float()
@@ -289,7 +308,6 @@ class QA_Net(nn.Module):  # param:
         p_embedding = self.embedding(passage)
         a_embeddings = self.embedding(answer)
         a_embeddings = a_embeddings.view(-1, a_embeddings.size(2), a_embeddings.size(3))  # (3b,a,h)
-
         q_conv_projection = self.q_conv_project(q_embedding.transpose(1, 2)).transpose(1, 2)  # (b,q,emb)-> (b,q,h)
         p_conv_projection = self.p_conv_project(p_embedding.transpose(1, 2)).transpose(1, 2)  # (b,q,emb)-> (b,p,h)
         # a_conv_projection = self.a_conv_project(a_embeddings.transpose(1, 2)).transpose(1, 2)  # (b,q,emb)-> (3b,a,h)
@@ -300,30 +318,26 @@ class QA_Net(nn.Module):  # param:
         q_highway = self.q_highway(q_conv_projection)
         p_highway = self.p_highway(p_conv_projection)
         a_highway = self.a_highway(a_embeddings)
-
         q_conv_dws = self.q_conv_dws(q_highway.transpose(1, 2)).transpose(1, 2)
         p_conv_dws = self.p_conv_dws(p_highway.transpose(1, 2)).transpose(1, 2)
         a_conv_dws = self.a_conv_dws(a_highway.transpose(1, 2)).transpose(1, 2)
         # #print("p/q_conv_dws: {}".format(p_conv_dws.shape))
         # #print("a_conv_dws: {}".format(a_conv_dws.shape))
-
         p_encoder = self.p_encoder(p_conv_dws.transpose(1, 2), p_mask).transpose(1, 2)
         q_encoder = self.q_encoder(q_conv_dws.transpose(1, 2), q_mask).transpose(1, 2)
         a_encoder = self.a_encoder(a_conv_dws.transpose(1, 2), a_mask).transpose(1, 2)
         # #print("p/q_encoder: {}".format(p_encoder.shape))
         # #print("a_encoder: {}".format(a_encoder.shape))
-
         # a score
         a_score = F.softmax(self.a_attention(a_encoder), 1)  # (3b,a,1)
         a_output = a_score.transpose(2, 1).bmm(a_encoder).squeeze()  # (3b,1,a) bmm (3b,a,h)-> (3b,1,h)
         a_embedding = a_output.view(answer.size(0), 3, -1)  # (b,3,h)
-
+        time_start = time.time()
         X = self.cq_att(p_encoder, q_encoder, p_mask, q_mask)
         # #print("CQ(X): {}".format(X.shape)) # (b.q.4h)
 
         M1 = self.x_conv_project(X.transpose(1,2)) # (b,h,q)
         # #print("M1: {}".format(M1.shape))
-
         for enc in self.model_enc_blks: # 7个
             M1 = enc(M1, p_mask)
         M2 = M1
@@ -339,3 +353,5 @@ class QA_Net(nn.Module):  # param:
         # Layer4: Prediction Layer
         loss = self.predictio_layer(q_encoder,M2,a_embedding,is_train=is_train,is_argmax=is_argmax)
         return loss
+
+

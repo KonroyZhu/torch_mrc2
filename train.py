@@ -1,6 +1,8 @@
 import argparse
 import json
 import pickle
+import time
+
 import torch
 
 from com.utils import shuffle_data, padding, pad_answer, get_model_parameters
@@ -23,11 +25,13 @@ def train(epoch, net,train_dt, opt, best):
     net.train()
     data = shuffle_data(train_dt, 1)
     total_loss = 0.0
+    time_sum=0.0
     for num, i in enumerate(range(0, len(data), opts["batch"])):
+        time_start = time.time()
         one = data[i:i + opts["batch"]]
         query, _ = padding([x[0] for x in one], max_len=opts["q_len"])
         passage, _ = padding([x[1] for x in one], max_len=opts["p_len"])
-        answer = pad_answer([x[2] for x in one],max_len=opts["alt_len"])
+        answer = pad_answer([x[2] for x in one])
         ids = [x[3] for x in one]
         query, passage, answer, ids = torch.LongTensor(query), torch.LongTensor(passage), torch.LongTensor(answer),ids
         if args.cuda:
@@ -39,10 +43,16 @@ def train(epoch, net,train_dt, opt, best):
         loss.backward()
         total_loss += loss.item()
         opt.step()
+        # 计时
+        time_end = time.time()
+        cost = (time_end - time_start)
+        time_sum += cost
         if (num + 1) % opts["log_interval"] == 0:
-            print ('|------epoch {:d} train error is {:f}  eclipse {:.2f}% best {}------|'.format(epoch,
-                                                                                         total_loss / opts["log_interval"],
-                                                                                         i * 100.0 / len(data),best))
+            ts=str('%.2f' % time_sum)
+            print('|---epoch {:d} train error is {:f}  eclipse {:.2f}%  costing: {} best {} ---|'.format(epoch,
+                                                                  total_loss /opts["log_interval"],
+                                                                  i * 100.0 / len( data),ts + " s",best))
+            time_sum=0.0
             total_loss = 0
 
 
@@ -91,7 +101,7 @@ if __name__ == '__main__':
     """
     opts["dropout"] = 0.2  # for QA & MwAN
     opts["head_size"]=1
-    """ toggle for QA/MwAN
+    # """ """toggle for QA/MwAN """
     model=QA_Net(opts,embedding_matrix)  # 14844161
     """
     model = MwAN_full(opts, embedding_matrix)  # 16821760

@@ -150,7 +150,7 @@ class PHN(nn.Module):  # param: 16821760
             :param pos_weight: (t,)
             :return:
             """
-            position_T = pos_weight
+            position_T = pos_weight[:t.size(2)]
             position_T = position_T.unsqueeze(0).unsqueeze(1).unsqueeze(3).repeat(opts["batch"], 3, 1, 1)
             position_Q = position_T.repeat(1, 1, 1, q.size(2))
             position_A = position_T.repeat(1, 1, 1, a.size(2))
@@ -232,7 +232,7 @@ class PHN(nn.Module):  # param: 16821760
         # 根据fiedler向量的值给text重新排序
         tk = tk.view(tk.size(0), tk.size(1), tk.size(2), -1)
         # #print("tk: {}".format(np.shape(tk)))
-        dep_idx, _ = padding([self.dep_info[int(id)] for id in ids], max_len=tk.size(2))
+        dep_idx, _ = padding([self.dep_info[int(id)] for id in ids], max_len=tk.size(2),limit_max=False)
         # #print("dep_mat: {}".format(np.shape(dep_idx)))
 
         tk_sort_init = np.zeros(shape=[tk.size(0), 3, t.size(2), tk.size(-1)])
