@@ -18,10 +18,7 @@ parser.add_argument('--output', type=str, default='data/5th-submita.txt', # TODO
                     help='prediction path')
 parser.add_argument('--model', type=str, default='net/dcn.pt',# TODO: 更换模型
                     help='model path')
-parser.add_argument('--batch_size', type=int, default=32, metavar='N',
-                    help='batch size')
-parser.add_argument('--cuda', action='store_true',
-                    help='use CUDA')
+
 
 args = parser.parse_args()
 
@@ -38,7 +35,7 @@ dt_name="testa"
 
 with open(model_path, 'rb') as f:
     model = torch.load(f)
-if args.cuda:
+if torch.cuda.is_available():
     model.cuda()
 
 with open(args.word_path, 'rb') as f:
@@ -70,7 +67,7 @@ def inference():
             passage = torch.LongTensor(passage)
             #print(np.shape(answer))
             answer=torch.LongTensor(answer)
-            if args.cuda:
+            if torch.cuda.is_available():
                 query = query.cuda()
                 passage = passage.cuda()
                 answer = answer.cuda()

@@ -14,8 +14,6 @@ from preprocess.get_emb import get_emb_mat
 
 parser = argparse.ArgumentParser(description='PyTorch implementation for Multiway Attention Networks for Modeling '
                                              'Sentence Pairs of the AI-Challenges')
-parser.add_argument('--cuda', action='store_true',
-                    help='use CUDA')
 parser.add_argument('--save', type=str, default='net/mwan_f.pt',
                     help='path to save the final model')
 args = parser.parse_args()
@@ -34,7 +32,7 @@ def train(epoch, net,train_dt, opt, best):
         answer = pad_answer([x[2] for x in one])
         ids = [x[3] for x in one]
         query, passage, answer, ids = torch.LongTensor(query), torch.LongTensor(passage), torch.LongTensor(answer),ids
-        if args.cuda:
+        if torch.cuda.is_available():
             query = query.cuda()
             passage = passage.cuda()
             answer = answer.cuda()
@@ -68,7 +66,7 @@ def test(net, valid_data):
             answer = pad_answer([x[2] for x in one],max_len=opts["alt_len"])
             ids = [x[3] for x in one]
             query, passage, answer,ids = torch.LongTensor(query), torch.LongTensor(passage), torch.LongTensor(answer),ids
-            if args.cuda:
+            if torch.cuda.is_available():
                 query = query.cuda()
                 passage = passage.cuda()
                 answer = answer.cuda()
@@ -107,7 +105,7 @@ if __name__ == '__main__':
     model = MwAN_full(opts, embedding_matrix)  # 16821760
     # """
     print('Model total parameters:', get_model_parameters(model))
-    if args.cuda:
+    if torch.cuda.is_available():
         model.cuda()
     optimizer = torch.optim.Adamax(model.parameters())
 
